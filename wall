@@ -1,0 +1,1625 @@
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:ital,wght@0,100;0,200;0,300;0,400;0,500;0,600;0,700;1,100;1,200;1,300;1,400;1,500;1,600;1,700&display=swap');
+
+  :root {
+    --font-family: 'IBM Plex Sans';
+  }
+
+    /* делаем везде так, чтобы свойства width и height задавали не размеры контента, а размеры блока */
+.wheelYWP * {
+  box-sizing: border-box !important;
+ font-family: 'IBM Plex Sans';
+}
+/* общие настройки страницы */
+
+.spin_conteyn{
+    /* задаём переменные блока */
+  /* размеры колеса */
+  --size: clamp(250px, 85vmin, 512px);
+  /* настройки яркости и заливки фона секторов */
+  --lg-hs: 0 3%;
+  --lg-stop: 50%;
+  --lg: linear-gradient(
+      hsl(var(--lg-hs) 0%) 0 var(--lg-stop),
+      hsl(var(--lg-hs) 20%) var(--lg-stop) 100%
+    );
+  /* добавляем позиционирование относительно других элементов */
+  position: relative;
+  /* подключаем сетку */
+  grid-gap: calc(var(--size) / 20);
+  /* выравниваем содержимое блока по центру */
+  align-items: center;
+  /* задаём имена областей внутри сетки */
+  grid-template-areas:
+    "spinner"
+    "trigger";
+  /* устанавливаем размер шрифта */
+  font-size: calc(var(--size) / 21);
+}
+/* общий блок для всех элементов */
+.deal-wheel {
+  display: flex;
+    align-items: center;
+    justify-content: space-evenly;
+    width: 100%;
+    max-width: 1440px;
+    margin: 0 auto;
+}
+
+/* всё, что относится ко внутренним элементам главного блока, будет находиться в области сетки с названием spinner */
+.deal-wheel > * {
+  grid-area: spinner;
+}
+
+/* сам блок и кнопка будут находиться в области сетки с названием trigger и будут выровнены по центру */
+.deal-wheel .btn-spin {
+  grid-area: trigger;
+  justify-self: center;
+}
+
+/* сектор колеса */
+.spinner {
+  /* добавляем относительное позиционирование */
+  position: relative;
+  /* подключаем сетку */
+  display: grid;
+  /* выравниваем всё по центру */
+  align-items: center;
+  /* добавляем элемент в сетку */
+  grid-template-areas: "spinner";
+  /* устанавливаем размеры */
+  width: var(--size);
+  height: var(--size);
+  /* поворачиваем элемент  */
+  -webkit-transform: rotate(calc(var(--rotate, 25) * 1deg));
+  transform: rotate(calc(var(--rotate, 25) * 1deg));
+  /* рисуем круглую обводку, а всё, что не поместится, — будет скрыто за кругом */
+  border-radius: 50%;
+  padding: 0;
+   border: 8px solid #C1C9E9;
+   padding: 0;
+   margin: 0;
+  -webkit-box-shadow: 6px -1px 100px 49px rgba(125, 173, 111, 0.4);
+-moz-box-shadow: 6px -1px 100px 49px rgba(125, 173, 111, 0.4);
+box-shadow: 6px -1px 100px 49px rgba(125, 173, 111, 0.4);
+
+    padding-left: 0!important;
+    margin-top: 0!important;
+    margin-bottom: 0!important;
+}
+
+/* всё, что внутри этого блока, будет находиться в области сетки с названием spinner */
+.spinner * {
+  grid-area: spinner;
+}
+
+/* текст на секторах */
+.prize {
+  /* включаем «гибкую» вёрстку */
+  display: flex;
+  align-items: center;
+  /* задаём отступы от краёв блока */
+  padding: 0 calc(var(--size) / 6) 0 calc(var(--size) / 20);
+  /* устанавливаем размеры */
+  width: 50%;
+  height: 50%;
+  /* устанавливаем координаты, относительно которых будем вращать текст */
+  -webkit-transform-origin: center right;
+  transform-origin: center right;
+  /* поворачиваем текст */
+  -webkit-transform: rotate(var(--rotate));
+  transform: rotate(var(--rotate));
+  /* запрещаем пользователю выделять мышкой текст на секторах */
+  user-select: none;
+}
+
+/* кнопка запуска колеса */
+.btn-spin {
+  color: white;
+  background: black;
+  border: none;
+  /* берём размер шрифта такой же, как в колесе */
+  font-size: inherit;
+  /* добавляем отступы от текста внутри кнопки */
+  padding: 0.9rem 2rem 1rem;
+  /* скругляем углы */
+  border-radius: 0.5rem;
+  /* меняем внешний вид курсора над кнопкой на руку*/
+  cursor: pointer;
+}
+
+/* если кнопка нажата и неактивна */
+.btn-spin:disabled {
+  /* меняем внешний вид курсора */
+  cursor: progress;
+  /* делаем кнопку полупрозрачной */
+  opacity: 0.25;
+}
+
+/* анимация вращения */
+.is-spinning .spinner {
+    -webkit-transition: transform 8s cubic-bezier(0.1, -0.01, 0, 1);
+  transition: transform 8s cubic-bezier(0.1, -0.01, 0, 1);
+}
+
+/* анимируем выпавший сектор */
+.prize.selected .text {
+  /* делаем текст белым */
+  color: white;
+  /* настраиваем длительность анимации */
+  -webkit-animation: selected 800ms ease;
+  animation: selected 800ms ease;
+}
+
+/* настраиваем анимацию текста на выпавшем секторе по кадрам */
+@keyframes selected {
+  /* что происходит на 25% от начала анимации */
+  25% {
+    /* увеличиваем текст в 1,25 раза */
+    -webkit-transform: scale(1.25);
+    transform: scale(1.25);
+    /* добавляем тексту тень */
+    -webkit-text-shadow: 1vmin 1vmin 0 hsla(0 0% 0% / 0.1);
+    text-shadow: 1vmin 1vmin 0 hsla(0 0% 0% / 0.1);
+  }
+  40% {
+    -webkit-transform: scale(0.92);
+    transform: scale(0.92);
+    -webkit-text-shadow: 0 0 0 hsla(0 0% 0% / 0.2);
+    text-shadow: 0 0 0 hsla(0 0% 0% / 0.2);
+  }
+  60% {
+    -webkit-transform: scale(1.02);
+    transform: scale(1.02);
+    -webkit-text-shadow: 0.5vmin 0.5vmin 0 hsla(0 0% 0% / 0.1);
+    text-shadow: 0.5vmin 0.5vmin 0 hsla(0 0% 0% / 0.1);
+  }
+  75% {
+    -webkit-transform: scale(1);
+    transform: scale(1);
+  }
+  85% {
+    -webkit-transform: scale(1);
+    transform: scale(1);
+  }
+}
+
+.text{
+    -webkit-transform: rotate(180deg);
+  transform: rotate(180deg);
+font-style: normal;
+font-weight: 400;
+font-size: 14px;
+line-height: 14px;
+text-align: center;
+
+color: #FFFFFF;
+}
+.slid_left{
+  display: flex;
+  align-items: center;
+}
+/*.liner{
+    z-index: -1;
+  position: absolute;
+  width: 400px;
+height: 400px;
+  background: #7bae6c;
+  -webkit-filter: blur(130px);
+filter: blur(130px);
+}*/
+.ticker1{
+  padding-left: 17px;
+      position: relative;
+}
+.ticker1 img{
+    position: relative;
+    z-index: 999;
+
+        max-width: 32.1px;
+}
+#promo{
+    border: none;
+    text-align: center;
+    font-family: 'Gilroy';
+    font-style: normal;
+    font-weight: 500;
+    font-size: 12px;
+    line-height: 14px;
+    letter-spacing: 2px;
+    color: #191919;
+}
+
+.slid_right{
+  color: white;
+  max-width: 350px;
+  position: relative;
+}
+
+#while_content{
+      position: fixed;
+    top:200%;
+  width: 100%;
+  height: 100vh;
+  display: grid;
+  align-items: center;
+    background: #212121;
+    z-index: 10000;
+    
+}
+
+
+.slid_right_tit{
+  font-style: normal;
+  font-weight: 700;
+  font-size: 36px;
+  line-height: 44px;
+  color: #FFFFFF;
+  margin: 0;
+  padding: 0;
+}
+.slid_right_text{
+  font-style: normal;
+  font-weight: 400;
+  font-size: 16px;
+  line-height: 19px;
+  color: #FFFFFF;
+  opacity: 0.7;
+    margin: 0;
+  padding: 0;
+  padding-top: 16px;
+  padding-bottom: 32px;
+  word-wrap: break-word;
+
+}
+.numb_content{
+width: 100%;
+    border: 2px solid #7bae6c;
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: flex-start;
+}
+.numb_content img{
+  max-width: 16px;
+  max-height: 16px;
+  margin-left: 11px;
+  margin-right: 11px;
+}
+.numb_content span{
+  padding-right: 10px;
+font-style: normal;
+font-weight: 400;
+font-size: 14px;
+line-height: 16px;
+
+color: #FFFFFF;
+}
+#phone_4::placeholder {
+font-style: normal;
+font-weight: 400;
+font-size: 14px;
+line-height: 16px;
+
+color: #FFFFFF;
+
+opacity: 0.2;
+}
+#phone_4{
+font-style: normal;
+font-weight: 400;
+font-size: 14px;
+line-height: 16px;
+
+color: #FFFFFF;}
+.tel_while{
+  padding: 16px 0;
+  border: none;
+color: white;
+background: none;
+}
+#while_content textarea:focus, #while_content input:focus{
+    outline: none;
+}
+.otpravit{
+  width: 100%;
+  height: 49px;
+background: #7bae6c;
+border-radius: 8px;
+cursor: not-allowed;
+font-style: normal;
+font-weight: 600;
+font-size: 14px;
+line-height: 17px;
+border: none;
+    margin-bottom: 25px;
+color: #FFFFFF;
+    position: relative;
+    overflow: hidden;
+}
+.otpravit:hover{
+  opacity: .7;
+}
+#error_text{
+  color: #FF0000;
+  display: none;
+font-style: normal;
+font-weight: 400;
+font-size: 8px;
+line-height: 9px;
+}
+#forchekimg{
+  cursor: pointer;
+      border-radius: 4px;
+}
+.labelcheck{
+  display: flex;
+  padding-right: 6px;
+}
+.checkbox_cont{
+  display: flex;
+  align-items: center;
+  padding: 0;
+    margin: 0;
+    padding: 28px 0;
+}
+.checkbox_cont span{
+  font-style: normal;
+  font-weight: 400;
+  font-size: 12px;
+  line-height: 14px;
+  /* identical to box height */
+  color: #FFFFFF;
+  padding-right: 6px;
+}
+.checkbox_cont a{
+  font-style: normal;
+  font-weight: 400;
+  font-size: 12px;
+  line-height: 14px;
+  text-decoration-line: underline;
+  color: #7D93EB;
+}
+.clos_modal{
+  position: absolute;
+  right: 41px;
+  top: 41px;
+  cursor: pointer;
+  height: 20px;
+  width: 20px;
+  background: url(https://www.ywp.1ry.ru/imgWheel/zak.svg);
+}
+.clos_modal:hover{
+  background: url(https://www.ywp.1ry.ru/imgWheel/zakhov.svg);
+}
+#zakokno:hover{
+  opacity: .8;
+}
+#shmodal_full{
+    width: 100px;
+  height: 100px;
+  background: url(https://www.ywp.1ry.ru/ferma24/pd.svg);
+      background-size: contain;
+
+}
+.shmodal{
+        -webkit-animation:spin 4000ms linear infinite;
+    -moz-animation:spin 4000ms linear infinite;
+    animation:spin 4000ms linear infinite;
+}
+@-moz-keyframes spin { 100% { -moz-transform: rotate(360deg); } }
+@-webkit-keyframes spin { 100% { -webkit-transform: rotate(360deg); } }
+@keyframes spin { 100% { -webkit-transform: rotate(360deg); transform:rotate(360deg); } }
+#show, .spin_conteyn, .modalopen_bl, .promo_block {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.modalopen_bl{
+    width: 100px;
+    height: 100px;
+    position: fixed;
+    bottom: 50px;
+    transition: all ease .4s;
+    z-index: 10000;
+}
+.modalopen_bl._right {
+  left: 20px;
+}
+.modalopen_bl._left {
+  left: 20px;
+}
+#show{
+  position: absolute;
+    z-index: 999;
+    text-align: center;
+    cursor: pointer;
+    width: 100%;
+    height: 100%;
+}
+.spin9 {
+    background: conic-gradient( from -90deg, 
+      #041248 0%,#2D4192 11.1111%,
+      #041248 0%,#2D4192 22.2222%,
+      #041248 0%,#2D4192 33.3333%,
+      #041248 0%,#2D4192 44.4444%,
+      #041248 0%,#2D4192 55.5556%,
+      #041248 0%,#2D4192 66.6667%,
+      #041248 0%,#2D4192 77.7778%,
+      #041248 0%,#2D4192 88.8889%,
+      #041248 0%,#2D4192  100% );
+}
+
+.spin7 {
+    background: conic-gradient( from -90deg, 
+      #041248 0%,#2D4192 14.2857142857%,
+      #041248 0%,#2D4192 28.571428571428573%,
+      #041248 0%,#2D4192 42.85714285714286%,
+      #041248 0%,#2D4192 56.142857%,
+      #041248 0%,#2D4192 71.42857142857143%,
+      #041248 0%,#2D4192 85.71428571428572%,
+      #041248 0%,#2D4192  100% );
+}
+.spin5 {
+    background: conic-gradient( from -90deg, 
+      #041248 0%,#2D4192 20%,
+      #041248 0%,#2D4192 40%,
+      #041248 0%,#2D4192 60%,
+      #041248 0%,#2D4192 80%,
+      #041248 0%,#2D4192  100% );
+}
+.spin3 {
+    background: conic-gradient( from -90deg, 
+      #041248 0%,#2D4192 33.333333333333336%,
+      #041248 0%,#2D4192 66.66666666666667%,
+      #041248 0%,#2D4192  100% );
+}
+.krugcentr{
+  width: 40px;
+  height: 40px;
+  position: absolute;
+  border-radius: 50%;
+  background: #FFFFFF;
+opacity: 0.7;
+box-shadow: 0px 0px 7px rgba(0, 0, 0, 0.32);
+backdrop-filter: blur(5px);
+z-index: 999;
+top: 50%;
+    left: 50%;
+    margin: -24px 0 0 -21px
+}
+.promo_block{
+  height: 46px;
+margin-bottom: 32px;
+background: #FFFFFF;
+border: 2px solid #
+7bae6c;
+border-radius: 8px;
+position: relative;
+}
+#promo_cont{
+font-style: normal;
+font-weight: 500;
+font-size: 12px;
+line-height: 14px;
+letter-spacing: 2px;
+display: none;
+color: #191919;
+}
+.copi_promo{
+  cursor: pointer;
+  position: absolute;
+  left: 15px;
+  line-height: 0;
+}
+#copy_mesage{
+  background: #191919;
+border: 0.5px solid rgba(255, 255, 255, 0.25);
+border-radius: 99px;
+padding: 8px 16px;
+display: none;
+font-style: normal;
+font-weight: 400;
+font-size: 14px;
+line-height: 16px;
+
+color: #FEFEFE;
+}
+#prom_styl{
+  display: none;
+}
+.vgrish{
+  display: none;
+font-style: normal;
+font-weight: 600;
+font-size: 16px;
+line-height: 19px;
+color: #FFFFFF;
+opacity: 0.7;
+padding-bottom: 16px;
+}
+#ywp{
+    position: absolute;
+    width: 100%;
+    font-style: normal;
+    font-weight: 400;
+    font-size: 12px;
+    line-height: 14px;
+    justify-content: center;
+    display: flex;
+    align-items: center;
+    color: #FFFFFF;
+    margin-top: 95px;
+}
+#ywp img{
+  margin-right: 12px;
+}
+#zakokno{
+  height: 49px;
+border: none;
+background: #191919;
+border-radius: 8px;
+font-style: normal;
+font-weight: 600;
+font-size: 14px;
+line-height: 17px;
+/* identical to box height */
+width: 100%;
+cursor: pointer;
+color: #FFFFFF;
+display: none;
+}
+.linear_podarok{
+  width: 96px;
+  height: 96px;
+position: absolute;
+  background: #7bae6c;
+  filter: blur(72px);
+}
+.skr_mof_mob{
+    display: none;
+}
+
+.shmodal1 {
+    -webkit-animation: spin 100000ms linear infinite;
+    -moz-animation: spin 100000ms linear infinite;
+    animation: spin 100000ms linear 
+
+}
+
+     @-moz-keyframes spin { 100% { -moz-transform: rotate(360deg); } }
+
+     @-webkit-keyframes spin { 100% { -webkit-transform: rotate(360deg); } }
+
+     @keyframes spin { 100% { -webkit-transform: rotate(360deg); transform:rotate(360deg); } }
+
+@media(max-width: 950px){
+
+#while_content{
+    -webkit-top: 100vh;
+    top: 100vh;
+    display: flex !important;
+}
+
+  #ywp {
+    margin-top: 29px;
+}
+    .clos_modal1{
+        display: block;
+    }
+.slid_left {
+     -webkit-transform: rotate(90deg);
+     transform: rotate(90deg);
+}
+.deal-wheel{
+    flex-wrap: wrap;
+    position: absolute;
+    top: -250px;
+}
+.clos_modal{
+    display: none;
+}
+.skr_mof_mob{
+    display: flex;
+    position: absolute;
+    text-align: center;
+    right: 16px;
+    top: 16px;
+    /* top: 0; */
+    width: 50px;
+    height: 50px;
+    background: #FFFFFF;
+    box-shadow: 0px 4px 28px rgb(0 0 0 / 25%);
+    border-radius: 50%;
+    /* position: relative; */
+    z-index: 999;
+    justify-content: center;
+    align-items: center;
+}
+.skr_mof_mob a{
+        line-height: 0;
+    display: block;
+    position: inherit;
+    margin: 0;
+    padding: 0;
+}
+.liner {
+display: none;
+}
+.slid_right {
+    color: white;
+    max-width: 100%;
+    position: relative;
+    padding: 0 30px;
+}
+.slid_right {
+text-align: center;
+    padding-top: 35px;
+        padding-bottom: 50px;
+}
+
+#ywp {
+    bottom: -30px;
+    position: inherit;
+}
+
+.min_sp{
+    display: block;
+}
+.spin_conteyn {
+    --size: clamp(250px, 125vmin, 600px);
+    }
+    #while_content {
+    position: fixed;
+   -webkit-overflow-scrolling:touch;
+    width: 100%;
+    height: 100vh;
+    overflow: scroll;
+    overflow-x: hidden;
+}
+.slid_right_tit {
+
+font-style: normal;
+font-weight: 700;
+font-size: 24px;
+line-height: 29px;
+/* identical to box height */
+
+text-align: center;
+
+color: #FFFFFF;
+}
+.slid_right_text {
+font-style: normal;
+font-weight: 400;
+font-size: 14px;
+line-height: 16px;
+text-align: center;
+
+color: #FFFFFF;
+
+opacity: 0.7;
+}
+}
+
+@media(max-width: 480px){
+
+.deal-wheel {
+    top: -190px;
+    min-height: 853px;
+}
+.spin_conteyn {
+    --size: clamp(250px, 142vmin, 488px);
+}
+}
+
+
+#otp_but {
+
+    position: relative;
+    font-size: 15px;
+    overflow: hidden;
+    -webkit-transition: ease 0.3s;
+    transition: ease 0.3s;
+}
+
+#otp_but:after {
+    content: "";
+    display: block;
+    width: 30px;
+    height: 300px;
+    margin-left: 60px;
+    background: #fff;
+    background: -moz-linear-gradient(top, rgba(255,255,255,0.7) 0%, rgba(255,255,255,1) 50%, rgba(255,255,255,0.7) 100%);
+    background: -webkit-linear-gradient(top, rgba(255,255,255,0.7) 0%,rgba(255,255,255,1) 50%,rgba(255,255,255,0.7) 100%);
+    background: linear-gradient(to bottom, rgba(255,255,255,0.7) 0%,rgba(255,255,255,1) 50%,rgba(255,255,255,0.7) 100%);
+    filter: progid:DXImageTransform.Microsoft.gradient( startColorstr='#b3ffffff', endColorstr='#b3ffffff',GradientType=0 );
+    position: absolute;
+    left: -40px;
+    top: -150px;
+    z-index: 1;
+    -webkit-transform: rotate(45deg);
+    transform: rotate(45deg);
+    -webkit-transition: all 0.5s;
+    transition: all 0.5s;
+    -webkit-animation-name: slideme;
+    animation-name: slideme;
+    -webkit-animation-duration: 5s;
+    animation-duration: 5s;
+    -webkit-animation-delay: 0.05s;
+    animation-delay: 0.05s;
+    -webkit-animation-timing-function: ease-in-out;
+    animation-timing-function: ease-in-out;
+    -webkit-animation-iteration-count: infinite;
+    animation-iteration-count: infinite;
+    opacity: 0.4;
+}
+
+@-webkit-keyframes slideme {
+    0% { left: -30px; margin-left: 0px; }
+    30% { left: 110%; margin-left: 80px; }
+    100% { left: 110%; margin-left: 80px; } 
+}
+
+.promo_block._hide {
+  display: none !important;
+}
+#privacyHref {
+  color: #7BAE6C !important;
+}
+.checkbox-box-ywp {
+  min-width: 16px;
+  min-height: 16px;
+  max-width: 16px;
+  max-height: 16px;
+  border-radius: 4px;
+  border: 2px solid #7bae6c;
+  position: relative;
+  display: inline-block;
+  margin: 0 6px 0 0;
+}
+.checkbox-box-ywp::before {
+  position: absolute;
+  content: '';
+  width: 8px;
+  height: 8px;
+  border-radius: 2px;
+  background-color: #7bae6c;
+  top: 2px;
+  left: 2px;
+  transition: all ease .4s;
+  opacity: 0;
+}
+.labelcheck, .otpravit {
+    cursor: pointer;
+}
+#chekboxYWP:checked ~ .labelcheck .checkbox-box-ywp::before {
+  opacity: 1;
+}
+#errorText {
+    margin: 10px 0 0 0;
+}
+.ticker {
+    margin: 0 0 0 10px;
+    width: 30px;
+}
+.ticker img {
+    width: 100%;
+}
+
+</style>
+
+<div class="wheelYWP">
+  <div class="modalopen_bl">
+    <a id="show" class="showWheel"><img src="https://ywp.1ry.ru/imgWheel/pod.svg"></a>
+    <div class="linear_podarok">
+      
+    </div>
+    <div id="shmodal_full" class="shmodal">
+      
+    </div>
+  </div>
+<div id="while_content" style="display:flex; " class="">
+     <div class="skr_mof_mob" >
+        <a class="clos_modal1 hide"  id="" onclick="closeEdge()"><img src="https://ywp.1ry.ru/imgWheel/x.svg"></a>
+        
+      </div>
+  <a class="clos_modal hide"  id="ful_ekran" style="display:none;"></a>
+<a class="clos_modal" id="pol_ekran" onclick="closeEdge()" style="display:none;"></a>
+  <div class="deal-wheel">
+
+    <div class="slid_left">
+
+      <div class="spin_conteyn">
+        <div class="krugcentr"></div>
+
+          <ul class="spinner shmodal1" id="remkrug" ></ul>
+      </div>
+      <div class="ticker"><img src="https://ywp.1ry.ru/imgWheel/ell.png"></div>
+    </div>
+    <div class="slid_right">
+      <div class="vgrish" id="winText">Вы выграли</div>
+      <h2 class="slid_right_tit" id="circleTitle">Беспроигрышное колесо удачи!</h2>
+      <p class="slid_right_text" id="circleText">Выиграй бонус в Кино на Коленке!</p>
+      <div class="promo_block" id="prom_styl">
+        <a class="copi_promo" onclick="myFunctionСopy()"><img src="https://ywp.1ry.ru/imgWheel/copy.svg"></a>
+        <div id="promo_cont">
+          
+          <input id="promo" type="" name="" readonly>
+        </div>
+        
+      </div>
+      
+      <form method="post" id="form_while" action="#">
+        <div class="numb_content">
+          <img src="http://ywp.1ry.ru/imgWheel/tel.svg" id="inpimg">
+          <span id="cod">+358</span>
+          <input type="tel" name="phone_4" class="tel_while" placeholder="или  email" id="phone_4" oninput="telValid()">
+          <input type="hidden" name="prom" id="promm">
+          <input type="hidden" name="prizz" id="prizz">
+        </div>
+        <ul id="error_text">
+          <li id="errorText">вы допустили жесточайшую ошибку</li>
+        </ul>
+              <div class="checkbox_cont" onclick="changeCheckbox()">
+              <input type="checkbox" name="chekchek" id="chekboxYWP" style="display:none;">
+              <label for="chekboxYWP" class="labelcheck">
+                <div class="checkbox-box-ywp"></div>
+                <span id="privacyText">Menscertifiera terastat.</span><a id="privacyHref" href="" target="_blank">Menscertifiera terastat.</a>
+              </label>
+            </div>
+        <button type="submit" style="display: none;" id="form_submit">das</button>
+    </form>
+    <button class="otpravit" id="otp_but" disabled onclick="checker()">Ikåsk</button>
+          <button class="hide" id="zakokno">Закрыть</button>
+    <div style="text-align: center;padding-top: 21px;">
+      <span id="copy_mesage">Успешно скопировано.</span>
+      <a href="https://1ry.ru/" target="_blank" rel="nofollow noreferrer noopener" ><span id="ywp"><img src="https://ywp.1ry.ru/imgWheel/ywp.svg"><span class="min_sp">by YWP</span></span></a>
+    </div>
+      <button class="btn-spin" onclick="barsh()" style="display: none;">Испытай удачу</button>
+
+    </div>
+</div>
+</div>
+</div>
+<script
+  type="text/javascript">async function sendMessage(message, settings) { const params = new URLSearchParams(message), result = Object.fromEntries(params); console.log(result); const parsedMessage = `\nКонтакт: ${result.phone_4}\nПриз: ${result.prizz}`; settings.telegram.active && sendTgMessage(String(parsedMessage), settings), settings.whatsapp.active && sendWaMessage(String(parsedMessage), settings) } async function sendTgMessage(message, settings) { const response = await fetch(`https://api.telegram.org/bot${settings.telegram.token}/sendMessage`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ chat_id: settings.telegram.chatId, text: settings.telegram.messageTemplate + message }) }), data = await response.json() } async function sendWaMessage(message, settings) { const parsed = settings.whatsapp.messageTemplate + message, url = `https://api.callmebot.com/whatsapp.php?source=javascript&phone=${encodeURIComponent(settings.whatsapp.phone)}&text=${encodeURIComponent(parsed)}&apikey=${settings.whatsapp.token}`, response = await fetch(url, { method: "GET", mode: "no-cors" }), status = response.status }</script>
+<script>
+  const messageSettings = {
+    active: true, // true = отправлять в мессенджеры, false - нет
+    telegram: {
+      active: true, // Отправлять в телеграм
+      token: '5672001467:AAFiU7xqVxKICBuu0DPrSxSSrkEVoaL_QNE',
+      chatId: '903752876',
+      messageTemplate: 'Кто-то покрутил колесо!\n'
+    },
+    whatsapp: {
+      active: true, // отправлять в whatsapp
+      token: '1617368',
+      phone: '358503500934',
+      messageTemplate: 'Кто-то покрутил колесо!\n'
+    },
+  }
+
+const screenWidth = window.screen.width;
+
+const wheelContent = document.getElementById('while_content');
+const shModalFull = document.getElementById('shmodal_full');
+const spinnerEl = document.getElementsByClassName('spinner')[0];
+const otpBut = document.getElementById('otp_but');
+const slideRightTit = document.getElementsByClassName('slid_right_tit')[0];
+const fullWindow = document.getElementById('ful_ekran');
+const halfWindow = document.getElementById('pol_ekran');
+const errorText = document.getElementById('error_text');
+const remCircle = document.getElementById('remkrug');
+const numbContent = document.getElementsByClassName('numb_content')[0];
+const formSubmit = document.getElementById("form_submit");
+const phoneFour = document.getElementById('phone_4');
+const modalOpen = document.querySelector('.modalopen_bl');
+
+document.querySelector('#circleTitle').innerText = 'Крутите колесо!';  // Заголовок 
+
+document.querySelector('#circleText').innerText = 'Благодарим за участие и поздравялем с победой! Совсем скоро мы сообщим как Вы можете получить свой приз.';  // Текст 
+
+document.querySelector('#winText').innerText = 'вы выиграли';  // Текст после выигрыша
+
+otpBut.style.backgroundColor = '#7bae6c'; // Цвет кнопки
+
+otpBut.innerText = 'крутить'; // Текст на кнопке
+
+document.querySelector('#zakokno').innerText = 'закрыть';  // Текст на кнопке закрытия (после прокрутки колеса)
+
+document.querySelector('#zakokno').backgroundColor = '#191919';  // Цвет кнопки закрытия (после прокрутки колеса)
+
+document.querySelector('#errorText').innerText = 'вы допустили ошибку';  // Текст ошибки валидации
+
+document.querySelector('#cod').innerText = '+7' // Код номера телефона
+
+document.querySelector('.numb_content').style.border = '2px solid #7bae6c'; // Border у поля ввода телефона / почты
+
+document.querySelector('#privacyText').innerText = 'я согласен с';  // Текст политики конфиденциальности
+
+document.querySelector('#privacyHref').innerText = 'политикой конфиденциальности';  // Текст ссылки политики конфиденциальности
+
+document.querySelector('#privacyHref').setAttribute('href', '##ССЫЛКУ СЮДА##');  // Ссылка политики конфиденциальности
+
+
+const firstColor = "#7bae6c"; // Первый цвет колеса
+const secondColor = "#ebc500"; // Второй цвет колеса
+
+const rollAlert = 'Вы уже крутили барабан 1 раз'; // Текст уведомления, если пользователь уже покрутил колесо
+
+const autoOpen = false; // Автооткрытие колеса
+
+const fullVer = true; // Автооткрытие полной версии либо в виде виджета
+
+const modalFullShow = 1; // Автопоказ модального окна (в секундах)
+
+const rightPosition = true;
+
+ function setCookie(cname, cvalue, exdays) {
+  const d = new Date();
+  d.setTime(d.getTime() + (exdays * 24 * 60 * 60 * 1000 * 60* 24));
+  let expires = "expires="+d.toUTCString();
+  document.cookie = cname + "=" + cvalue + ";" + expires + ";path=/";
+}
+
+if(autoOpen) {
+  modalOpen.style.display = 'none';
+}
+else {
+  const buttons = document.querySelectorAll('.showWheel');
+  buttons.forEach(el => {
+    el.addEventListener('click', () => {
+      if(autoOpen === false && rightPosition) modalOpen.style.right = '-200%';
+      wheelContent.classList.toggle('_active');
+      if (screenWidth>600 && fullVer) {
+        document.getElementById('while_content').style.display='none';
+       document.getElementById('while_content').style.top='0'; 
+      document.getElementById('while_content').style.width='100%';
+      document.getElementById('while_content').style.left='0';
+      $("#while_content").fadeIn();
+      document.getElementById('ful_ekran').style.display="block"
+    }else{
+    openEdge()
+    }
+    })
+  })
+}
+
+if(rightPosition) {
+  modalOpen.classList.add('_right');
+}
+else {
+  modalOpen.classList.add('_left');
+
+}
+
+function getCookie(cname) {
+  let name = cname + "=";
+  let ca = document.cookie.split(';');
+  for(let i = 0; i < ca.length; i++) {
+    let c = ca[i];
+    while (c.charAt(0) == ' ') {
+      c = c.substring(1);
+    }
+    if (c.indexOf(name) == 0) {
+      return c.substring(name.length, c.length);
+    }
+  }
+  return "";
+}
+
+  function telValid() {
+    var valinpval = Number(phoneFour.value);
+    if (valinpval || valinpval == " ") {
+      document.getElementById('inpimg').src= "http://ywp.1ry.ru/imgWheel/tel.svg";
+      document.getElementById('cod').style.display="block";
+      phoneFour.type = "text"
+    }else{
+      document.getElementById('inpimg').src= "http://ywp.1ry.ru/imgWheel/mail.svg";
+      document.getElementById('cod').style.display="none";
+      phoneFour.type = "email"
+    }
+  }
+
+  function checker() {
+    if(phoneFour.value==''){
+      errorText.style.display='block';
+      numbContent.style.borderColor = "#B10000";
+      remCircle.classList.add('shmodal1');
+      
+    }else{
+        if (Number(phoneFour.value)) {
+            remCircle.classList.remove('shmodal1');
+          var numbcount= phoneFour.value.length;
+          if (numbcount < 4 || numbcount > 10) {
+            errorText.style.display='block';
+            numbContent.style.borderColor = "#B10000";
+          }else{
+            errorText.style.display='none';
+            otpBut.disabled=true;
+            numbContent.style.borderColor = "#7bae6c";
+            remCircle.classList.remove('shmodal1');
+                  if (getCookie("username")!="") {
+      alert(rollAlert)
+  }else{
+   formSubmit.click()
+    
+  }
+            
+          }
+
+        }else{
+          var inputText = phoneFour;
+
+            if(validateEmail(inputText)){
+            errorText.style.display='none';
+            otpBut.disabled=true;
+            numbContent.style.borderColor = "#7bae6c";
+            remCircle.classList.remove('shmodal1');
+                  if (getCookie("username")!="") {
+                       alert(rollAlert)
+                   }else{
+                    formSubmit.click()
+                    }
+            }else{
+                remCircle.classList.add('shmodal1');
+                  errorText.style.display='block';
+                  numbContent.style.borderColor = "#B10000";
+            }
+
+        }
+
+
+    
+    }
+
+  }
+function changeCheckbox() {
+  if (document.getElementById('chekboxYWP').checked) {
+    otpBut.disabled=false;
+    otpBut.style.pointerEvents='all';
+    otpBut.style.cursor='pointer';
+    
+  }else{
+    otpBut.disabled=true;
+    otpBut.style.pointerEvents='none';
+    otpBut.style.cursor='not-allowed';
+  }
+}
+changeCheckbox()
+ 
+
+     var it1 = 8;
+     var col = 100/it1;
+     if(it1%2 == 0){
+        var color1 = firstColor;
+        var color2 = secondColor;
+     }else{
+        if (it1 == 7) {
+          spinnerEl.classList.add('spin7')
+        }else if(it1 == 5){
+          spinnerEl.classList.add('spin5')
+        }else if(it1 == 3){
+          spinnerEl.classList.add('spin3')
+        }else if(it1 == 9){
+          spinnerEl.classList.add('spin9')
+        }
+      
+     }
+
+
+
+// КОЛИЧЕСТВО И НАСТРОЙКИ ПРИЗОВ
+const prizes = [
+    {
+    text: "Бесплатный детский билет",
+    color: color2,
+    proc:10,
+  },
+    {
+    text: "Скидка 5% на билет будний день",
+    color: color1,
+    proc:10,
+  },
+     {
+    text: "Скидка 10% на билет выходного дня",
+    color: color2,
+    proc:10,
+  },
+     {
+    text: "Сертификат на 1 месяц на ребенка",
+    color: color1,
+    proc:10,
+  },
+    {
+    text: "Скидка 10% на аренду праздника",
+    color: color1,
+    proc:10,
+  },
+      {
+    text: "Скидка 15% на билет выходного дня",
+    color: color2,
+    proc:10,
+  },
+    {
+    text: "Скидка 50% на билет",
+    color: color1,
+    proc:30,
+  },
+    {
+    text: "Cкидка 10% на меню в кафе",
+    color: color1,
+    proc:30,
+  },
+
+];
+
+
+
+
+// создаём переменные для быстрого доступа ко всем объектам на странице — блоку в целом, колесу, кнопке и язычку
+const wheel = document.querySelector(".deal-wheel");
+const spinner = wheel.querySelector(".spinner");
+const trigger = wheel.querySelector(".btn-spin");
+const ticker = wheel.querySelector(".ticker2");
+
+// на сколько секторов нарезаем круг
+const prizeSlice = 360 / prizes.length;
+// на какое расстояние смещаем сектора друг относительно друга
+const prizeOffset = Math.floor(180 / prizes.length);
+// прописываем CSS-классы, которые будем добавлять и убирать из стилей
+const spinClass = "is-spinning";
+const selectedClass = "selected";
+// получаем все значения параметров стилей у секторов
+const spinnerStyles = window.getComputedStyle(spinner);
+
+// переменная для анимации
+var tickerAnim;
+// угол вращения
+var rotation = 0;
+// текущий сектор
+var currentSlice = 0;
+// переменная для текстовых подписей
+var prizeNodes;
+var cif = 1;
+
+// расставляем текст по секторам
+const createPrizeNodes = () => {
+  // обрабатываем каждую подпись
+  prizes.forEach(({ text, color, proc, reaction }, i) => {
+
+    // каждой из них назначаем свой угол поворота
+    const rotation = ((prizeSlice * i) * -1) - prizeOffset;
+    // добавляем код с размещением текста на страницу в конец блока spinner
+    spinner.insertAdjacentHTML(
+      "beforeend",
+      // текст при этом уже оформлен нужными стилями
+      `<li id = `+cif+` value=${proc} id = `+cif+` class="prize" data-reaction=${reaction} style="--rotate: ${rotation}deg">
+        <span class="text">${text}</span>
+      </li>`
+    );
+cif = cif+1;
+  });
+};
+
+
+// рисуем разноцветные секторы
+const createConicGradient = () => {
+  // устанавливаем нужное значение стиля у элемента spinner
+  spinner.setAttribute(
+    "style",
+    `background: conic-gradient(
+      from -90deg,
+      ${prizes
+        // получаем цвет текущего сектора
+        .map(({ color }, i) => `${color} 0 ${(100 / prizes.length) * (prizes.length - i)}%`)
+        .reverse()
+      }
+    );`
+  );
+};
+
+
+// создаём функцию, которая нарисует колесо в сборе
+const setupWheel = () => {
+  // сначала секторы
+  createConicGradient();
+  // потом текст
+  createPrizeNodes();
+  // а потом мы получим список всех призов на странице, чтобы работать с ними как с объектами
+  prizeNodes = wheel.querySelectorAll(".prize");
+    var it = document.getElementsByClassName('prize').length;
+
+    if (it==10) spinnerEl.style.transform='rotate(calc(var(--rotate, 18) * 1deg))';
+    
+    if (it==9) spinnerEl.style.transform='rotate(calc(var(--rotate, 38) * 1deg))';
+    
+     if (it==7 || it == 5 || it == 3) spinnerEl.style.transform='rotate(calc(var(--rotate, 0) * 1deg))';
+    
+    if (it==4) spinnerEl.style.transform='rotate(calc(var(--rotate, 43) * 1deg))';
+    
+    if (it==2) spinnerEl.style.transform='rotate(calc(var(--rotate, 90) * 1deg))';
+    
+};
+
+
+
+// функция запуска вращения с плавной остановкой
+const runTickerAnimation = () => {
+  // взяли код анимации отсюда: https://css-tricks.com/get-value-of-css-rotation-through-javascript/
+  const values = spinnerStyles.transform.split("(")[1].split(")")[0].split(",");
+  const a = values[0];
+  const b = values[1];  
+  let rad = Math.atan2(b, a);
+  
+  if (rad < 0) rad += (2 * Math.PI);
+  
+  const angle = Math.round(rad * (180 / Math.PI));
+  const slice = Math.floor(angle / prizeSlice);
+
+  // анимация язычка, когда его задевает колесо при вращении
+  // если появился новый сектор
+  if (currentSlice !== slice) {
+    // убираем анимацию язычка
+    // и через 10 миллисекунд отменяем это, чтобы он вернулся в первоначальное положение
+    //setTimeout(() => ticker.style.animation = null, 10);
+    // после того, как язычок прошёл сектор - делаем его текущим 
+    currentSlice = slice;
+  }
+  // запускаем анимацию
+  //tickerAnim = requestAnimationFrame(runTickerAnimation);
+};
+
+const getRandomIntInclusive = (min, max) => Math.floor(Math.random() * (Math.floor(max) - Math.ceil(min) + 1)) + Math.ceil(min); // Максимум и минимум включаются
+
+function barsh() {
+
+if (activid<mijcifr) {
+prize = (mijcifr-activid)*ugl+ugl/2
+}else if (mijcifr==activid) {
+prize = 0+ugl/2;
+}else if (activid>mijcifr) {
+ prize = 360 - ((activid-mijcifr)*ugl)+ugl/2
+}
+
+if (it == 9) prize += ugl/2;
+
+
+if (it == 7 || it == 5|| it == 3) prize -= ugl/2;
+  // делаем её недоступной для нажатия
+  trigger.disabled = true;
+  // задаём начальное вращение колеса
+  rotation = Math.floor(1080+prize);
+  // убираем прошлый приз
+  //prizeNodes.forEach((prize) => prize.classList.remove(selectedClass));
+  // добавляем колесу класс is-spinning, с помощью которого реализуем нужную отрисовку
+  wheel.classList.add(spinClass);
+  // через CSS говорим секторам, как им повернуться
+  spinner.style.setProperty("--rotate", rotation);
+  // возвращаем язычок в горизонтальную позицию
+  //ticker.style.animation = "none";
+  // запускаем анимацию вращение
+  runTickerAnimation();
+povtorvrashenie()
+
+fetch('https://ipapi.co/json/')
+  .then(d => d.json())
+  //.then(d => document.querySelector('#ip').innerHTML = d.ip);
+  .then(d => setCookie("username", d.ip, 1))
+}
+
+function povtorvrashenie() {
+// отслеживаем, когда закончилась анимация вращения колеса
+spinner.addEventListener("transitionend", () => {
+  // останавливаем отрисовку вращения
+  cancelAnimationFrame(tickerAnim);
+  // получаем текущее значение поворота колеса
+  rotation %= 360;
+  // выбираем приз
+  // убираем класс, который отвечает за вращение
+  wheel.classList.remove(spinClass);
+  // отправляем в CSS новое положение поворота колеса
+  spinner.style.setProperty("--rotate", rotation);
+  // делаем кнопку снова активной
+  trigger.disabled = false;
+document.getElementById('circleText').innerText = "Благодарим за участие и поздравялем с победой! Совсем скоро мы сообщим как Вы можете получить свой приз."
+document.getElementById('promo_cont').style.display="block"
+document.getElementById('promo').value=promo;
+var prtxt= document.getElementById(mijcifr).innerText
+slideRightTit.innerText = prtxt
+slideRightTit.style.fontSize="28px";
+slideRightTit.style.lineHeight='34px';
+document.getElementsByClassName('vgrish')[0].style.display="block";
+document.getElementById('form_while').style.display="none"
+otpBut.style.display="none"
+document.getElementById('zakokno').style.display="block"
+document.getElementById('prom_styl').style.display="flex"
+otpBut.disabled=false;
+});
+}
+
+
+// подготавливаем всё к первому запуску
+setupWheel();
+var activid;
+var it = document.getElementsByClassName('prize').length;
+    if(it == 10 || it == 9) activid = 6;
+    
+    if (it == 8 || it == 7) activid = 5;
+    
+    if (it == 6) activid = 4;
+    
+    if (it == 5 || it == 4) activid = 3;
+    
+    if(it == 3 || it == 2) activid = 2;
+var lf;
+window.onload = function() {
+ var c = document.getElementsByClassName('krugcentr')[0].getBoundingClientRect();
+ lf =-(c.left+20);
+
+};
+
+function slowAlert() {
+  shModalFull.classList.add('shmodal')     
+}
+
+setInterval(function () {
+    timeoutID = window.setTimeout(slowAlert, modalFullShow * 1000);
+    shModalFull.classList.remove('shmodal');
+
+}, modalFullShow * 1000 * 4);
+
+function openEdge() {
+
+  $("#while_content").fadeIn();
+  if (screenWidth>950) {
+    wheelContent.style.top ="0";
+    wheelContent.style.display ="flex";
+    wheelContent.style.left=lf+'px';
+    wheelContent.style.width ="0";
+    fullWindow.style.display="none"
+    halfWindow.style.display="block"
+      $( "#while_content" ).animate({
+      width: "100%",
+    }, 500 );
+  }
+  else{
+
+      $( "#while_content" ).animate({
+      top: '0',
+    }, 600 );
+  }
+}
+
+function closeEdge() {
+  wheelContent.classList.remove('_active')
+  if(modalOpen.classList.contains('_right')) {
+    modalOpen.style.right = '20px';
+  }
+  else {
+    modalOpen.style.left = '20px';
+  }
+  if (screenWidth>950) {
+     halfWindow.style.display="none"
+    $( "#while_content" ).animate({
+    width: "0",
+  }, 600 );
+
+    wheelContent.style.width ="100%";
+    setTimeout(timeoutForWidget, 602)
+   }else{
+       $( "#while_content" ).animate({
+    top: '120%',
+  }, 600 );
+   }
+}
+
+function autoFulOp(){
+  setTimeout(myGreeting, modalFullShow * 1000);
+}
+function autoWidgetOp(){
+  setTimeout(myGreeting1, modalFullShow * 1000);
+}
+function myGreeting() {
+
+    if ( screenWidth > 950 ) {
+      wheelContent.style.display='none';
+      wheelContent.style.top='0'; 
+      wheelContent.style.width='100%';
+      wheelContent.style.left='0';
+      $("#while_content").fadeIn();
+      fullWindow.style.display="block"
+}else{
+  openEdge()
+}
+
+}
+function myGreeting1() {
+  openEdge() 
+
+}
+
+if (autoOpen) {
+  if (fullVer) {
+    autoFulOp()
+  }
+  else {
+    autoWidgetOp();
+  }
+}
+
+function timeoutForWidget() {
+  wheelContent.style.display ="none";
+}
+
+function myFunctionСopy() {
+
+  var copyText = document.getElementById("promo");
+  copyText.select();
+  document.execCommand("copy");
+  document.getElementById("copy_mesage").style.display="inline-flex";
+
+}
+document.addEventListener('DOMContentLoaded', () => {
+  const form = document.getElementById('form_while');
+  form.addEventListener('submit', formSend)
+
+  async function formSend(e){
+    e.preventDefault();
+    
+  }
+
+  function formValidate(form) {
+    let error = 0;
+  }
+
+})
+
+function validateEmail(inputText)
+{
+  var mailformat = /^\w+([\.-]?\w+)*@\w+([\.-]?\w+)*(\.\w{2,3})+$/;
+  
+  if(inputText.value.match(mailformat)) {
+    return true;
+  }
+
+  return false;
+
+}
+
+document.querySelector('#phone_4').addEventListener('keydown', e => {
+  if(e.keyCode == 13) {
+    e.preventDefault();
+    return false;
+  }
+})
+
+
+</script>
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<script>
+  const promoCode = false; // Включение / выключение промокода (true - включен, false - выключен)
+
+var promo = 0;
+var chis = 0;
+var it = 0;
+var ugl = 0;
+var priz = 0;
+var mijcifr = 0;
+const screenWidth1 = window.screen.width;
+  //$("#phone_4").mask("99-999-99-99")
+jQuery(function($) {
+
+
+$(".hide").click(function() {
+      if(modalOpen.classList.contains('_right')) {
+    modalOpen.style.right = '20px';
+  }
+  else {
+    modalOpen.style.left = '20px';
+  }
+  if (screenWidth1>600) {
+    
+    if(document.getElementById('while_content').style.left !="0px"){
+        closeEdge()
+    }else{
+        $("#while_content").fadeOut();
+        document.getElementById('while_content').style.left=0;
+        document.getElementById('ful_ekran').style.display="none"
+    }
+
+    
+  }else{
+    closeEdge()
+  }
+});
+});
+
+
+
+promoCode === false ? document.querySelector('.promo_block').classList.add('_hide') : undefined;
+
+$(function(){
+$('#form_while').submit(function() {
+  promoCode ? promo = getRandomIntInclusive(10000,99999) : promo = 0;
+          var toki = new Array(10);
+it = document.getElementsByClassName('prize').length;
+ugl = 360/it;
+chis = getRandomIntInclusive(1,100);  
+for (var i = 0; i < 10; i++) {
+  if (i>it-1) {
+       toki[i] = 0;
+  }else{
+ toki[i] = document.getElementById(i+1).value;
+}
+}
+
+
+var mij1 = 0+toki[0];
+
+var mij2 = mij1+toki[1];
+
+if (toki[2] != "ywp text 1") var mij3 = mij2+toki[2];
+
+if (toki[3] != "ywp text 2") var mij4 = mij3+toki[3];
+
+if (toki[4] != "ywp text 3") var mij5 = mij4+toki[4];
+
+if (toki[5] != "ywp text 4") var mij6 = mij5+toki[5];
+
+if (toki[6] != " ") var mij7 = mij6+toki[6];
+
+if (toki[7] != " ") var mij8 = mij7+toki[7];
+
+if (toki[8] != " ") var mij9 = mij8+toki[8];
+
+if (toki[9] != " ") var mij10 = mij9+toki[9];
+
+
+if (chis>0 && chis <= mij1) mijcifr = 1;
+
+if (chis>mij1 && chis <= mij2) mijcifr = 2;
+
+if (chis>mij2 && chis <= mij3) mijcifr = 3;
+
+if (chis>mij3 && chis <= mij4) mijcifr = 4;
+
+if (chis>mij4 && chis <= mij5) mijcifr = 5;
+
+if (chis>mij5 && chis <= mij6) mijcifr = 6;
+
+if (chis>mij6 && chis <= mij7) mijcifr = 7;
+
+if (chis>mij7 && chis <= mij8) mijcifr = 8;
+
+if (chis>mij8 && chis <= mij9) mijcifr = 9;
+
+if (chis>mij9 && chis <= mij10) mijcifr = 10;
+
+      document.getElementById('promm').value = promo;
+      document.getElementById('prizz').value = document.getElementById(mijcifr).children[0].innerText
+var form = $(this);
+  if (messageSettings.active) {
+        sendMessage(form.serialize(), messageSettings);
+      }
+  $.ajax({
+      type: "POST",
+      url: "https://www.ywp.1ry.ru/site987.php",
+      data: form.serialize(),
+      beforeSend: (function(){
+
+      }),error: function(XMLHttpRequest, textStatus, errorThrown) {
+          
+          },success: (function() {
+                      barsh()
+      setTimeout(function() {
+          form.trigger("reset");
+      }, 2000);
+  })
+})
+  return false;
+})
+})
+</script>
